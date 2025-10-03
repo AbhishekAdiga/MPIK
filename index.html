@@ -7,220 +7,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         
+
 * {
     box-sizing: border-box;
 }
 
-.bg-container {
+.container {
     height: 100vh;
-    width: 100vw;
-    padding: 1rem;
-    background-color: darkblue;
-    display: grid;
-    grid-template-columns: 2fr 3fr;
-    gap: 0.5rem;
-    align-items: stretch;
-}
-
-.webpage {
-    height: 95vh;
-    width: 70vw;
-    border: 2px solid white;
-}
-
-#navbar {
-    height: 10vh;
-    width: 95%;
-    margin: 1rem;
-    border: 2px dashed white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    overflow: hidden;
-}
-
-#tool {
-    height: 100vh;
-    margin: 1rem;
-    border: 2px dashed white;
-    text-align: center;
-    color: white;
-}
-
-.navbar {
-    text-align: left;
-    padding: 0px 5px;
-}
-
-/* Modal styles */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background-color: skyblue;
+    color: White;
+    padding: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.modal.hidden {
-    display: none;
+#leftbox,
+#rightbox {
+    height: 50vh;
+    width: 45vh;
+    margin: 0.5rem;
+    border: 2px dashed;
+    position: relative;
+    /* important for absolute children */
 }
 
-.modal-content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
+.lists {
+    text-align: center;
+    padding: 1rem;
+    margin: 0.5rem;
+    border: 2px solid white;
+    background-color: white;
+    color: black;
+    position: absolute;
+    /* allow free placement */
 }
 
-.modal-content label {
-    display: block;
-    margin: 8px 0 4px;
-}
-
-.modal-content input,
-.modal-content select {
-    width: 100%;
-    padding: 6px;
-    margin-bottom: 10px;
+.resize-handle {
+    width: 10px;
+    height: 10px;
+    background: red;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: se-resize;
 }
     </style>
 </head>
 
 <body>
     
-    <div class="bg-container">
-        <div class="webpage">
-            <div id="navbar"></div>
-        </div>
-        <div id="tool">
-            <h1>TOOL</h1>
-            <div class="navbar">
-                <h2>Navbar</h2>
-                <ul>
-                    <li><button onclick="logo()">Logo</button></li>
-                    <li><button onclick="addIcon('search')">Search Icon</button></li>
-                    <li><button onclick="addIcon('browse')">Browsing Icon</button></li>
-                    <li><button onclick="addIcon('login')">User Login Icon</button></li>
-                    <li><button onclick="addIcon('hamburger')">Hamburger Icon</button></li>
-                    <li><button onclick="navItems()">Nav Items</button></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <!-- Modal -->
-    <div id="logo-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Add Logo</h2>
-            <form id="logo-form"> <label>Height:</label> <input type="text" name="height" placeholder="e.g. 50px" required> <label>Width:</label> <input type="text" name="width" placeholder="e.g. 100px" required> <label>Position in Navbar:</label> <select name="position">
-                    <option value="start">Start</option>
-                    <option value="middle">Middle</option>
-                    <option value="end">End</option>
-                </select>
-                <label>Image URL:</label> <input type="url" name="imageUrl" placeholder="https://..." required>
-                <button type="submit">Submit</button>
-                <button type="button" onclick="closeModal('logo-modal')">Cancel</button>
-            </form>
-        </div>
-    </div>
-    <!-- Example Modal for Search -->
-    <div id="search-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Add Search</h2>
-            <form id="search-form">
-                <label>Height: <input name="height" required></label>
-                <label>Width: <input name="width" required></label>
-                <label>Position: <select name="position">
-                        <option value="start">Start</option>
-                        <option value="middle">Middle</option>
-                        <option value="end">End</option>
-                    </select>
-                </label>
-                <button type="submit">Add Search Icon</button>
-                <button type="button" onclick="closeModal('search-modal')">Cancel</button>
-            </form>
-        </div>
-    </div>
-    <!-- Example Modal for browse -->
-    <div id="browse-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Add browse</h2>
-            <form id="browse-form">
-                <label>Height: <input name="height" required></label>
-                <label>Width: <input name="width" required></label>
-                <label>Position: <select name="position">
-                        <option value="start">Start</option>
-                        <option value="middle">Middle</option>
-                        <option value="end">End</option>
-                    </select>
-                </label>
-                <button type="submit">Add Search Icon</button>
-                <button type="button" onclick="closeModal('browse-modal')">Cancel</button>
-            </form>
-        </div>
-    </div>
-    <!-- Example Modal for Login -->
-    <div id="login-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Add Login</h2>
-            <form id="login-form">
-                <label>Height: <input name="height" required></label>
-                <label>Width: <input name="width" required></label>
-                <label>Position: <select name="position">
-                        <option value="start">Start</option>
-                        <option value="middle">Middle</option>
-                        <option value="end">End</option>
-                    </select>
-                </label>
-                <button type="submit">Add Search Icon</button>
-                <button type="button" onclick="closeModal('login-modal')">Cancel</button>
-            </form>
-        </div>
-    </div>
-    <!-- Example Modal for hamburger -->
-    <div id="hamburger-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Add Search</h2>
-            <form id="hamburger-form">
-                <label>Height: <input name="height" required></label>
-                <label>Width: <input name="width" required></label>
-                <label>Position: <select name="position">
-                        <option value="start">Start</option>
-                        <option value="middle">Middle</option>
-                        <option value="end">End</option>
-                    </select>
-                </label>
-                <button type="submit">Add Search Icon</button>
-                <button type="button" onclick="closeModal('hamburger-modal')">Cancel</button>
-            </form>
-        </div>
-    </div>
-    
-
-    <!-- Nav Items Modal -->
-    <div id="navitem-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Add Nav Items</h2>
-            <form id="navitem-form">
-                <label>Number of Items:
-                    <input type="number" name="count" min="1" required>
-                </label>
-                <div id="item-names-container">
-                    <!-- Dynamic inputs will appear here -->
-                </div>
-                <label>Position in Navbar:
-                    <select name="position">
-                        <option value="start">Start</option>
-                        <option value="middle">Middle</option>
-                        <option value="end">End</option>
-                    </select>
-                </label>
-                <button type="submit">Add Nav Items</button>
-                <button type="button" onclick="closeModal('navitem-modal')">Cancel</button>
-            </form>
+    <div class="container">
+        <div id="leftbox"></div>
+        <div id="rightbox">
+            <div class="lists" draggable="true">List Item 1</div>
+            <div class="lists" draggable="true">List Item 2</div>
+            <div class="lists" draggable="true">List Item 3</div>
+            <div class="lists" draggable="true">List Item 4</div>
         </div>
     </div>
 
@@ -232,257 +75,84 @@
   - Keep your existing HTML IDs / templates; if any are missing, script will warn (console) but continue
 */
 
-        let navbar = document.getElementById("navbar");
-let historyStack = [];
+        let items = document.getElementsByClassName('lists');
+let rightBox = document.getElementById('rightbox');
+let leftBox = document.getElementById('leftbox');
+let selectedItem = null;
 
-function closeModal(id) {
-    document.getElementById(id).classList.add("hidden");
+for (let item of Array.from(items)) {
+    item.addEventListener("dragstart", function(e) {
+        selectedItem = e.target;
+    });
 }
 
-function logo() {
-    document.getElementById("logo-modal").classList.remove("hidden");
+function enableTextEditing(el) {
+    el.addEventListener("dblclick", () => {
+        el.setAttribute("contenteditable", "true");
+        el.focus();
+        el.addEventListener("blur", () => {
+            el.removeAttribute("contenteditable");
+        }, {
+            once: true
+        });
+    });
+}
 
-    const form = document.getElementById("logo-form");
-    form.onsubmit = function(e) {
+function makeResizable(el) {
+    let handle = document.createElement("div");
+    handle.className = "resize-handle";
+    el.appendChild(handle);
+
+    handle.addEventListener("mousedown", e => {
         e.preventDefault();
+        let startX = e.clientX;
+        let startY = e.clientY;
+        let startWidth = parseInt(getComputedStyle(el).width, 10);
+        let startHeight = parseInt(getComputedStyle(el).height, 10);
 
-        const formData = new FormData(form);
-        const details = {
-            height: formData.get("height"),
-            width: formData.get("width"),
-            position: formData.get("position"),
-            imageUrl: formData.get("imageUrl"),
-        };
-
-        // Create wrapper for logo + delete button
-        let wrapper = document.createElement("div");
-        wrapper.style.position = "relative";
-        wrapper.style.display = "inline-block";
-        wrapper.style.margin = "0 10px";
-
-        let logo = document.createElement("div");
-        logo.style.height = details.height;
-        logo.style.width = details.width;
-        logo.style.backgroundImage = `url(${details.imageUrl})`;
-        logo.style.backgroundSize = "contain";
-        logo.style.backgroundRepeat = "no-repeat";
-        logo.style.backgroundPosition = "center";
-
-        // Delete button
-        let delBtn = document.createElement("button");
-        delBtn.textContent = "❌";
-        delBtn.style.position = "absolute";
-        delBtn.style.top = "-8px";
-        delBtn.style.right = "-8px";
-        delBtn.style.background = "red";
-        delBtn.style.color = "white";
-        delBtn.style.border = "none";
-        delBtn.style.borderRadius = "50%";
-        delBtn.style.cursor = "pointer";
-        delBtn.style.fontSize = "10px";
-
-        delBtn.onclick = function() {
-            historyStack.push({
-                element: wrapper,
-                position: Array.from(navbar.children).indexOf(wrapper)
-            });
-            navbar.removeChild(wrapper);
-        };
-
-        wrapper.appendChild(logo);
-        wrapper.appendChild(delBtn);
-
-        // Insert according to position
-        if (details.position === "start") {
-            navbar.insertBefore(wrapper, navbar.firstChild);
-        } else if (details.position === "middle") {
-            let middleIndex = Math.floor(navbar.children.length / 2);
-            navbar.insertBefore(wrapper, navbar.children[middleIndex] || null);
-        } else {
-            navbar.appendChild(wrapper); // end
+        function doDrag(e) {
+            el.style.width = (startWidth + e.clientX - startX) + "px";
+            el.style.height = (startHeight + e.clientY - startY) + "px";
         }
 
-        console.log("Logo details:", details);
-        closeModal("logo-modal");
-        form.reset();
-    };
+        function stopDrag() {
+            document.removeEventListener("mousemove", doDrag);
+            document.removeEventListener("mouseup", stopDrag);
+        }
+
+        document.addEventListener("mousemove", doDrag);
+        document.addEventListener("mouseup", stopDrag);
+    });
 }
 
-// Adding an icons
-function addIcon(type) {
-    const modalId = `${type}-modal`;
-    document.getElementById(modalId).classList.remove("hidden");
-
-    const form = document.getElementById(`${type}-form`);
-    form.onsubmit = function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(form);
-        const details = {
-            height: formData.get("height"),
-            width: formData.get("width"),
-            position: formData.get("position"),
-        };
-
-        // Wrapper (for icon + delete button)
-        let wrapper = document.createElement("div");
-        wrapper.style.position = "relative";
-        wrapper.style.display = "inline-block";
-        wrapper.style.margin = "0 10px";
-
-        // Icon element
-        let icon = document.createElement("div");
-        icon.style.height = details.height;
-        icon.style.width = details.width;
-        icon.style.display = "flex";
-        icon.style.alignItems = "center";
-        icon.style.justifyContent = "center";
-        icon.style.fontSize = details.height; // icon size matches height
-
-        // Choose icon type
-        if (type === "search") {
-            icon.innerHTML = "🔍";
-        } else if (type === "browse") {
-            icon.innerHTML = "🌐";
-        } else if (type === "login") {
-            icon.innerHTML = "👤";
-        } else if (type === "hamburger") {
-            icon.innerHtml = "☰";
-        }
-
-        // Delete button
-        let delBtn = document.createElement("button");
-        delBtn.textContent = "❌";
-        delBtn.style.position = "absolute";
-        delBtn.style.top = "-8px";
-        delBtn.style.right = "-8px";
-        delBtn.style.background = "red";
-        delBtn.style.color = "white";
-        delBtn.style.border = "none";
-        delBtn.style.borderRadius = "50%";
-        delBtn.style.cursor = "pointer";
-        delBtn.style.fontSize = "10px";
-
-        delBtn.onclick = function() {
-            historyStack.push({
-                element: wrapper,
-                position: Array.from(navbar.children).indexOf(wrapper)
-            });
-            navbar.removeChild(wrapper);
-        };
-
-        wrapper.appendChild(icon);
-        wrapper.appendChild(delBtn);
-
-        // Insert based on position
-        if (details.position === "start") {
-            navbar.insertBefore(wrapper, navbar.firstChild);
-        } else if (details.position === "middle") {
-            let middleIndex = Math.floor(navbar.children.length / 2);
-            navbar.insertBefore(wrapper, navbar.children[middleIndex] || null);
-        } else {
-            navbar.appendChild(wrapper);
-        }
-
-        console.log(`${type} icon details:`, details);
-        closeModal(modalId);
-        form.reset();
-    };
+function addItemFeatures(el) {
+    enableTextEditing(el);
+    makeResizable(el);
 }
 
-//Nav Items
-function navItems() {
-    document.getElementById("navitem-modal").classList.remove("hidden");
-    const form = document.getElementById("navitem-form");
-    const countInput = form.querySelector("input[name='count']");
-    const container = document.getElementById("item-names-container");
+function dropInBox(box, e) {
+    if (selectedItem) {
+        let clone = selectedItem.cloneNode(true); // keep original intact
+        let rect = box.getBoundingClientRect();
 
-    // When number of items changes, add input fields
-    countInput.oninput = function() {
-        container.innerHTML = ""; // clear old inputs
-        const count = parseInt(this.value);
-        for (let i = 1; i <= count; i++) {
-            const input = document.createElement("input");
-            input.name = `item${i}`;
-            input.placeholder = `Item ${i} Name`;
-            input.required = true;
-            container.appendChild(input);
-            container.appendChild(document.createElement("br"));
-        }
-    };
+        // calculate position relative to container
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
 
-    form.onsubmit = function(e) {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const count = parseInt(formData.get("count"));
-        const position = formData.get("position");
+        clone.style.left = x + "px";
+        clone.style.top = y + "px";
 
-        for (let i = 1; i <= count; i++) {
-            const itemName = formData.get(`item${i}`);
-            let wrapper = document.createElement("div");
-            wrapper.style.position = "relative";
-            wrapper.style.display = "inline-block";
-            wrapper.style.margin = "0 10px";
-
-            let navItem = document.createElement("div");
-            navItem.textContent = itemName;
-            navItem.style.padding = "5px 10px";
-            navItem.style.background = "lightgray";
-            navItem.style.borderRadius = "4px";
-
-            // Delete button
-            let delBtn = document.createElement("button");
-            delBtn.textContent = "❌";
-            delBtn.style.position = "absolute";
-            delBtn.style.top = "-5px";
-            delBtn.style.right = "-5px";
-            delBtn.style.background = "red";
-            delBtn.style.color = "white";
-            delBtn.style.border = "none";
-            delBtn.style.borderRadius = "50%";
-            delBtn.style.cursor = "pointer";
-            delBtn.style.fontSize = "10px";
-
-            delBtn.onclick = function() {
-                historyStack.push({
-                    element: wrapper,
-                    position: Array.from(navbar.children).indexOf(wrapper)
-                });
-                navbar.removeChild(wrapper);
-            };
-
-            wrapper.appendChild(navItem);
-            wrapper.appendChild(delBtn);
-
-            // Insert based on position
-            if (position === "start") navbar.insertBefore(wrapper, navbar.firstChild);
-            else if (position === "middle") {
-                let mid = Math.floor(navbar.children.length / 2);
-                navbar.insertBefore(wrapper, navbar.children[mid] || null);
-            } else navbar.appendChild(wrapper);
-        }
-
-        form.reset();
-        container.innerHTML = "";
-        closeModal("navitem-modal");
-    };
-}
-
-
-
-// Undo function
-function undo() {
-    if (historyStack.length > 0) {
-        const lastAction = historyStack.pop();
-        if (lastAction.position >= navbar.children.length) {
-            navbar.appendChild(lastAction.element);
-        } else {
-            navbar.insertBefore(lastAction.element, navbar.children[lastAction.position]);
-        }
-    } else {
-        console.log("Nothing to undo");
+        box.appendChild(clone);
+        addItemFeatures(clone);
+        selectedItem = null;
     }
 }
+
+rightBox.addEventListener("dragover", e => e.preventDefault());
+leftBox.addEventListener("dragover", e => e.preventDefault());
+
+rightBox.addEventListener("drop", e => dropInBox(rightBox, e));
+leftBox.addEventListener("drop", e => dropInBox(leftBox, e));
     </script>
 
 </body>
