@@ -15,4 +15,4 @@ Editor V2: https://image2url.com/images/1759488112616-1e702d15-442b-426f-b88d-c8
 
 Editor V3: https://image2url.com/images/1759488141059-8939d360-2afa-48af-8e23-88f14dda5bf4.png
 
-Editor V4: https://image2url.com/images/1759488141059-8939d360-2afa-48af-8e23-88f14dda5bf4.png
+Editor V4: https://image2url.com/images/1759488436182-a8145abf-96cd-4897-861e-a1a12a0aa514.png
