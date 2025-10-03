@@ -3,158 +3,1391 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>MPIK Dynamic Webpage Editor — Improved</title>
+    <title>MPIK Dynamic Webpage Editor</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        
+        :root {
+            /* Color palette: 1 primary, 2-3 neutrals, 1 accent */
+            --color-primary: #0ea5a4;
+            /* teal-500 */
+            --color-accent: #f59e0b;
+            /* amber-500 */
+            --color-bg: #f6f8fb;
+            /* light neutral */
+            --color-surface: #ffffff;
+            /* white */
+            --color-text: #0f172a;
+            /* slate-900 */
+            --radius: 12px;
+            --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            --shadow-soft: 0 4px 14px rgba(15, 23, 42, 0.06);
+            --focus: 0 0 0 3px rgba(14, 165, 164, 0.25);
+            --gap: 12px;
+            --gap-lg: 16px;
+            --gap-xl: 24px;
+        }
 
-* {
-    box-sizing: border-box;
-}
+        * {
+            box-sizing: border-box;
+        }
 
-.container {
-    height: 100vh;
-    background-color: skyblue;
-    color: White;
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        html,
+        body {
+            height: 100%;
+        }
 
-#leftbox,
-#rightbox {
-    height: 50vh;
-    width: 45vh;
-    margin: 0.5rem;
-    border: 2px dashed;
-    position: relative;
-    /* important for absolute children */
-}
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+            color: var(--color-text);
+            background: linear-gradient(180deg, #f8fafc 0%, var(--color-bg) 100%);
+        }
 
-.lists {
-    text-align: center;
-    padding: 1rem;
-    margin: 0.5rem;
-    border: 2px solid white;
-    background-color: white;
-    color: black;
-    position: absolute;
-    /* allow free placement */
-}
+        /* Header */
+        header {
+            position: fixed;
+            inset-inline: 0;
+            top: 0;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: var(--color-surface);
+            box-shadow: var(--shadow);
+            z-index: 30;
+        }
 
-.resize-handle {
-    width: 10px;
-    height: 10px;
-    background: red;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    cursor: se-resize;
-}
+        header h1 {
+            font-size: 18px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.15);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Layout */
+        main {
+            padding-top: 72px;
+            height: calc(100% - 72px);
+            display: grid;
+            grid-template-columns: 30% 70%;
+            gap: var(--gap-lg);
+            padding-inline: var(--gap-lg);
+            padding-bottom: var(--gap-lg);
+        }
+
+        aside.toolbar {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: var(--gap-lg);
+            overflow: auto;
+            max-height: calc(100vh - 96px);
+        }
+
+        section.workspace {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        .workspace-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #fcfcfd;
+        }
+
+        .workspace-body {
+            position: relative;
+            flex: 1;
+            overflow: auto;
+            background: repeating-linear-gradient(45deg, #f6f8fb, #f6f8fb 10px, #f1f5f9 10px, #f1f5f9 20px);
+            padding: 16px;
+        }
+
+        /* Canvas */
+        .canvas-wrapper {
+            position: relative;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .section {
+            position: relative;
+            border: 1px dashed rgba(15, 23, 42, 0.15);
+            border-radius: 10px;
+            overflow: visible;
+            transition: box-shadow 120ms ease, border-color 120ms ease;
+        }
+
+        .section.selected {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(14, 165, 164, 0.25) inset;
+        }
+
+        .section-toolbar {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(6px);
+            padding: 6px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            bottom: -6px;
+            right: -6px;
+            cursor: nwse-resize;
+            box-shadow: 0 2px 6px rgba(14, 165, 164, 0.4);
+            border: 2px solid white;
+        }
+
+        /* Elements inside sections */
+        .droppable {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .el {
+            position: absolute;
+            min-width: 56px;
+            min-height: 32px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            padding: 10px;
+            user-select: none;
+        }
+
+        .el.selected {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .el[data-type="heading"] {
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .el[data-type="text"] {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .el[data-type="button"] {
+            border: none;
+            background: var(--color-primary);
+            color: white;
+            text-align: center;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: grab;
+            font-weight: 600;
+        }
+
+        .el[data-type="links"] {
+            font-size: 14px;
+        }
+
+        .el[data-type="image"] {
+            padding: 0;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .el-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: #fff;
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            gap: 10px;
+        }
+
+        .control-group {
+            display: grid;
+            gap: 6px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 12px;
+            color: #475569;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="color"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+            outline: none;
+            transition: border-color 120ms ease, box-shadow 120ms ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--color-primary);
+            box-shadow: var(--focus);
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            background: var(--color-primary);
+            color: white;
+            box-shadow: var(--shadow-soft);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn.secondary {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--color-text);
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn.warn {
+            background: #ef4444;
+        }
+
+        .btn:focus-visible {
+            box-shadow: var(--focus);
+            outline: none;
+        }
+
+        /* Collapsible toolbar sections */
+        details {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 12px;
+        }
+
+        summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 12px 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .stage-body {
+            padding: 0 14px 14px 14px;
+            display: grid;
+            gap: 12px;
+        }
+
+        /* Palette */
+        .palette {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .palette-item {
+            padding: 10px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            background: #fbfdff;
+            text-align: center;
+            font-size: 12px;
+            color: #334155;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .palette-item:active {
+            cursor: grabbing;
+        }
+
+        /* Preview overlay */
+        .preview-banner {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #fff8eb;
+            color: #92400e;
+            border-bottom: 1px solid #fde68a;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Tiny icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+        }
+
+        .icon-btn:hover {
+            background: #f8fafc;
+        }
+
+        /* Helpers */
+        .muted {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .sr-only {
+            position: absolute;
+            left: -10000px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
     </style>
 </head>
 
 <body>
-    
-    <div class="container">
-        <div id="leftbox"></div>
-        <div id="rightbox">
-            <div class="lists" draggable="true">List Item 1</div>
-            <div class="lists" draggable="true">List Item 2</div>
-            <div class="lists" draggable="true">List Item 3</div>
-            <div class="lists" draggable="true">List Item 4</div>
+    <header>
+        <h1><span class="brand-dot" aria-hidden="true"></span> MPIK Dynamic Webpage Editor</h1>
+        <div class="header-actions">
+            <button class="btn ghost" id="btn-load">Load JSON</button>
+            <input type="file" id="input-load" accept="application/json" class="sr-only" />
+            <button class="btn" id="btn-save">Save JSON</button>
+            <button class="btn secondary" id="btn-export">Export HTML</button>
         </div>
-    </div>
+    </header>
+
+    <main>
+        <aside class="toolbar" aria-label="Editor toolbar">
+            Stage 1: Dimensions & Sections
+            <details open id="stage1">
+                <summary>Stage 1 · Webpage Dimensions & Sections</summary>
+                <div class="stage-body">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Preset</label>
+                            <select id="preset-select" aria-label="Preset dimensions">
+                                <option value="1366x768">Standard (1366 x 768)</option>
+                                <option value="1024x768">Classic (1024 x 768)</option>
+                                <option value="1440x900">Wide (1440 x 900)</option>
+                            </select>
+                        </div>
+                        <div class="grid-2">
+                            <div class="control-group">
+                                <label for="page-width">Custom Width (px)</label>
+                                <input id="page-width" type="number" min="320" value="1366" />
+                            </div>
+                            <div class="control-group">
+                                <label for="page-height">Custom Height (px)</label>
+                                <input id="page-height" type="number" min="400" value="768" />
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label for="section-count">Number of Sections</label>
+                            <input id="section-count" type="number" min="1" max="20" value="3" />
+                        </div>
+                        <div class="right">
+                            <button class="btn" id="btn-generate">Generate Layout</button>
+                        </div>
+                    </div>
+
+                    <div class="controls" id="sections-config" hidden>
+                        <div class="control-group">
+                            <label>Sections (click a section to select on canvas)</label>
+                            <div id="sections-list" class="controls"></div>
+                        </div>
+                        <div class="right">
+                            <button class="btn ghost" id="btn-s1-save">Save</button>
+                            <button class="btn" id="btn-s1-next">Next: Customize Sections</button>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            Stage 2: Section Customization
+            <details id="stage2">
+                <summary>Stage 2 · Section Customization</summary>
+                <div class="stage-body">
+                    <p class="muted">Select a section on the canvas to customize it.</p>
+                    <div class="controls">
+                        <div class="grid-3">
+                            <div class="control-group">
+                                <label>Section Width (px)</label>
+                                <input id="sec-width" type="number" min="100" />
+                            </div>
+                            <div class="control-group">
+                                <label>Section Height (px)</label>
+                                <input id="sec-height" type="number" min="60" />
+                            </div>
+                            <div class="control-group">
+                                <label>Background</label>
+                                <input id="sec-bg" type="color" value="#ffffff" />
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Add Elements</label>
+                            <div class="palette" aria-label="Palette of elements to drag into section">
+                                <div class="palette-item" draggable="true" data-kind="heading">Heading</div>
+                                <div class="palette-item" draggable="true" data-kind="text">Text</div>
+                                <div class="palette-item" draggable="true" data-kind="button">Button</div>
+                                <div class="palette-item" draggable="true" data-kind="links">Quick Links</div>
+                                <div class="palette-item" draggable="true" data-kind="image">Image</div>
+                                <div class="palette-item" draggable="true" data-kind="icon">Icon/Logo</div>
+                            </div>
+                            <div class="control-row">
+                                <label for="upload-image" class="sr-only">Upload Image</label>
+                                <input id="upload-image" type="file" accept="image/*" />
+                                <button class="btn secondary" id="btn-insert-upload">Insert Uploaded as Image</button>
+                            </div>
+                        </div>
+
+                        <div class="right">
+                            <button class="btn ghost" id="btn-s2-save">Save</button>
+                            <button class="btn" id="btn-s2-next">Next: Edit Content</button>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            Stage 3: Content Editing
+            <details id="stage3">
+                <summary>Stage 3 · Content Editing</summary>
+                <div class="stage-body">
+                    <p class="muted">Select a text/heading/button/links element on the canvas to edit.</p>
+                    <div role="toolbar" aria-label="Text formatting" class="control-row">
+                        <button class="btn secondary" id="fmt-bold"><strong>B</strong></button>
+                        <button class="btn secondary" id="fmt-italic"><em>I</em></button>
+                        <div class="control-group" style="min-width:120px;">
+                            <label for="fmt-size">Font Size (px)</label>
+                            <input id="fmt-size" type="number" min="10" max="72" value="16" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="el-label">Text / Label</label>
+                        <input id="el-label" type="text" placeholder="Edit selected element text..." />
+                    </div>
+
+                    <div class="right">
+                        <button class="btn ghost" id="btn-s3-save">Save</button>
+                        <button class="btn" id="btn-s3-preview">Preview Mode</button>
+                    </div>
+                </div>
+            </details>
+        </aside>
+
+        <section class="workspace" aria-label="Editing workspace">
+            <div class="workspace-header">
+                <div class="muted">Workspace · Drag to move elements, use corner handle to resize sections.</div>
+                <div class="control-row">
+                    <button class="btn ghost" id="btn-fit">Fit to View</button>
+                    <button class="btn" id="btn-preview">Preview</button>
+                </div>
+            </div>
+            <div class="workspace-body">
+                <div id="canvas" class="canvas-wrapper" style="width: 1366px; height: 768px;">
+                    Sections render here
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <template id="tpl-section-item">
+        <div class="control-row" data-item>
+            <span class="muted" data-title>Section</span>
+            <div class="grid-2" style="flex:1;">
+                <input type="number" min="100" data-w />
+                <input type="number" min="60" data-h />
+            </div>
+            <button class="btn secondary" data-focus>Select</button>
+            <button class="btn warn" data-del>Delete</button>
+        </div>
+    </template>
+
+    <template id="tpl-quick-links">
+        <ul style="margin:0; padding-left:18px;">
+            <li><a href="#" style="color:var(--color-primary); text-decoration:none;">Home</a></li>
+            <li><a href="#" style="color:var(--color-primary); text-decoration:none;">About</a></li>
+            <li><a href="#" style="color:var(--color-primary); text-decoration:none;">Contact</a></li>
+        </ul>
+    </template>
 
     <script type="module">
-        /*
-  MPIK Dynamic Webpage Editor - robust version
-  - Defensive checks to avoid runtime errors when required DOM nodes are missing
-  - Preserves original behaviour and event wiring
-  - Keep your existing HTML IDs / templates; if any are missing, script will warn (console) but continue
-*/
+        // State
+        const state = {
+            page: {
+                width: 1366,
+                height: 768
+            },
+            sections: [], // {id, x, y, width, height, bg, elements:[{id,type,x,y,w,h,content,style,src}]}
+            selectedSectionId: null,
+            selectedElementId: null,
+            uploadedImageDataURL: null,
+            previewMode: false,
+        };
 
-        let items = document.getElementsByClassName('lists');
-let rightBox = document.getElementById('rightbox');
-let leftBox = document.getElementById('leftbox');
-let selectedItem = null;
+        // Utilities
+        const uid = (p = 'id') => p + '_' + Math.random().toString(36).slice(2, 9);
+        const el = (sel, root = document) => root.querySelector(sel);
+        const els = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+        const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-for (let item of Array.from(items)) {
-    item.addEventListener("dragstart", function(e) {
-        selectedItem = e.target;
-    });
-}
+        // DOM refs
+        const canvas = el('#canvas');
+        const sectionsList = el('#sections-list');
+        const tplSectionItem = el('#tpl-section-item');
+        const tplQuickLinks = el('#tpl-quick-links');
 
-function enableTextEditing(el) {
-    el.addEventListener("dblclick", () => {
-        el.setAttribute("contenteditable", "true");
-        el.focus();
-        el.addEventListener("blur", () => {
-            el.removeAttribute("contenteditable");
-        }, {
-            once: true
+        // Controls
+        const presetSelect = el('#preset-select');
+        const inputPageW = el('#page-width');
+        const inputPageH = el('#page-height');
+        const inputSectionCount = el('#section-count');
+        const btnGenerate = el('#btn-generate');
+        const s1Panel = el('#sections-config');
+        const btnS1Save = el('#btn-s1-save');
+        const btnS1Next = el('#btn-s1-next');
+
+        const inputSecW = el('#sec-width');
+        const inputSecH = el('#sec-height');
+        const inputSecBG = el('#sec-bg');
+        const uploadImage = el('#upload-image');
+        const btnInsertUpload = el('#btn-insert-upload');
+        const btnS2Save = el('#btn-s2-save');
+        const btnS2Next = el('#btn-s2-next');
+
+        const fmtBold = el('#fmt-bold');
+        const fmtItalic = el('#fmt-italic');
+        const fmtSize = el('#fmt-size');
+        const elLabel = el('#el-label');
+        const btnS3Save = el('#btn-s3-save');
+        const btnS3Preview = el('#btn-s3-preview');
+
+        const btnFit = el('#btn-fit');
+        const btnPreview = el('#btn-preview');
+        const btnSave = el('#btn-save');
+        const btnExport = el('#btn-export');
+        const btnLoad = el('#btn-load');
+        const inputLoad = el('#input-load');
+
+        // Managers
+        const CanvasManager = {
+            render() {
+                // update canvas size
+                canvas.style.width = state.page.width + 'px';
+                canvas.style.height = state.page.height + 'px';
+
+                // clear
+                canvas.innerHTML = '';
+
+                // render sections stacked vertically by default if no y positions
+                let curY = 0;
+                for (const s of state.sections) {
+                    if (typeof s.y !== 'number') s.y = curY;
+                    if (typeof s.x !== 'number') s.x = 0;
+                    curY += s.height + 12;
+
+                    const sec = document.createElement('div');
+                    sec.className = 'section' + (s.id === state.selectedSectionId ? ' selected' : '');
+                    sec.style.left = s.x + 'px';
+                    sec.style.top = s.y + 'px';
+                    sec.style.width = s.width + 'px';
+                    sec.style.height = s.height + 'px';
+                    sec.style.background = s.bg || '#ffffff';
+                    sec.style.position = 'absolute';
+                    sec.dataset.id = s.id;
+
+                    // toolbar
+                    const st = document.createElement('div');
+                    st.className = 'section-toolbar';
+                    st.innerHTML = `
+            <button class="icon-btn" data-action="select" title="Select section" aria-label="Select section">
+              ${Icons.cursor}
+            </button>
+            <button class="icon-btn" data-action="delete" title="Delete section" aria-label="Delete section">
+              ${Icons.trash}
+            </button>
+          `;
+                    sec.appendChild(st);
+
+                    // resize handle
+                    const h = document.createElement('div');
+                    h.className = 'handle';
+                    h.title = 'Resize';
+                    h.dataset.action = 'resize';
+                    sec.appendChild(h);
+
+                    // droppable area
+                    const drop = document.createElement('div');
+                    drop.className = 'droppable';
+                    drop.dataset.sectionId = s.id;
+                    drop.style.width = '100%';
+                    drop.style.height = '100%';
+                    drop.addEventListener('dragover', DnD.onDragOver);
+                    drop.addEventListener('drop', DnD.onDrop);
+                    sec.appendChild(drop);
+
+                    // render elements
+                    for (const e of (s.elements || [])) {
+                        const node = this.renderElement(e);
+                        drop.appendChild(node);
+                    }
+
+                    // wiring
+                    sec.addEventListener('mousedown', (ev) => {
+                        // select section if background clicked
+                        if (ev.target === sec || ev.target === drop) {
+                            selectSection(s.id);
+                        }
+                    });
+
+                    // section toolbar actions
+                    st.addEventListener('click', (ev) => {
+                        const btn = ev.target.closest('button');
+                        if (!btn) return;
+                        const act = btn.dataset.action;
+                        if (act === 'select') {
+                            selectSection(s.id);
+                        } else if (act === 'delete') {
+                            deleteSection(s.id);
+                        }
+                    });
+
+                    // resize
+                    h.addEventListener('mousedown', (ev) => {
+                        Resize.startSectionResize(ev, s.id);
+                    });
+
+                    // make section draggable within canvas (optional: not requested, skip for simplicity)
+                    canvas.appendChild(sec);
+                }
+            },
+
+            renderElement(e) {
+                const node = document.createElement(e.type === 'button' ? 'button' : 'div');
+                node.className = 'el' + (e.id === state.selectedElementId ? ' selected' : '');
+                node.dataset.id = e.id;
+                node.dataset.type = e.type;
+                node.style.left = (e.x ?? 20) + 'px';
+                node.style.top = (e.y ?? 20) + 'px';
+                node.style.width = (e.w ?? 160) + 'px';
+                node.style.height = (e.h ?? (e.type === 'image' || e.type === 'icon' ? 120 : 40)) + 'px';
+                if (e.style?.fontSize) node.style.fontSize = e.style.fontSize + 'px';
+                if (e.style?.fontWeight) node.style.fontWeight = e.style.fontWeight;
+                if (e.style?.fontStyle) node.style.fontStyle = e.style.fontStyle;
+
+                // content
+                if (e.type === 'image' || e.type === 'icon') {
+                    const img = document.createElement('img');
+                    img.className = 'el-img';
+                    img.alt = e.type === 'icon' ? 'Icon' : 'Image';
+                    img.src = e.src || '';
+                    node.appendChild(img);
+                } else if (e.type === 'links') {
+                    node.innerHTML = tplQuickLinks.innerHTML;
+                } else if (e.type === 'button') {
+                    node.textContent = e.content || 'Button';
+                    node.draggable = false; // we handle position via mousedown
+                } else {
+                    node.contentEditable = 'true';
+                    node.spellcheck = false;
+                    node.innerText = e.content || (e.type === 'heading' ? 'Your Heading' : 'Your text...');
+                }
+
+                // dragging inside section
+                node.addEventListener('mousedown', (ev) => {
+                    ev.stopPropagation();
+                    selectElement(e.id);
+                    Drag.start(ev, e.id);
+                });
+
+                // keyboard delete
+                node.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Delete') {
+                        deleteElement(e.id);
+                    }
+                });
+
+                return node;
+            },
+
+            fitToView() {
+                const wrap = canvas.parentElement; // workspace-body
+                const maxW = wrap.clientWidth - 24;
+                const maxH = wrap.clientHeight - 24;
+                const scale = Math.min(maxW / state.page.width, maxH / state.page.height, 1);
+                canvas.style.transformOrigin = 'top left';
+                canvas.style.transform = `scale(${scale})`;
+            },
+
+            clearTransform() {
+                canvas.style.transform = 'none';
+            }
+        };
+
+        const Toolbar = {
+            refreshSectionList() {
+                sectionsList.innerHTML = '';
+                for (const s of state.sections) {
+                    const item = tplSectionItem.content.firstElementChild.cloneNode(true);
+                    item.querySelector('[data-title]').textContent = `Section ${indexOfSection(s.id)+1}`;
+                    const iw = item.querySelector('[data-w]');
+                    const ih = item.querySelector('[data-h]');
+                    iw.value = s.width;
+                    ih.value = s.height;
+
+                    iw.addEventListener('change', () => {
+                        s.width = clamp(parseInt(iw.value || 0, 10), 100, state.page.width);
+                        CanvasManager.render();
+                    });
+                    ih.addEventListener('change', () => {
+                        s.height = clamp(parseInt(ih.value || 0, 10), 60, state.page.height);
+                        CanvasManager.render();
+                    });
+
+                    item.querySelector('[data-focus]').addEventListener('click', () => {
+                        selectSection(s.id);
+                        // Scroll to section position
+                        const dom = el(`.section[data-id="${s.id}"]`);
+                        dom?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    });
+                    item.querySelector('[data-del]').addEventListener('click', () => {
+                        deleteSection(s.id);
+                    });
+
+                    sectionsList.appendChild(item);
+                }
+                s1Panel.hidden = state.sections.length === 0;
+            },
+
+            refreshSectionFields() {
+                const s = getSelectedSection();
+                if (!s) {
+                    inputSecW.value = '';
+                    inputSecH.value = '';
+                    inputSecBG.value = '#ffffff';
+                    return;
+                }
+                inputSecW.value = s.width;
+                inputSecH.value = s.height;
+                inputSecBG.value = s.bg || '#ffffff';
+            },
+
+            refreshElementFields() {
+                const e = getSelectedElement();
+                if (!e) {
+                    elLabel.value = '';
+                    fmtSize.value = 16;
+                    return;
+                }
+                if (e.type === 'button' || e.type === 'text' || e.type === 'heading' || e.type === 'links') {
+                    elLabel.value = e.content || '';
+                    fmtSize.value = e.style?.fontSize || (e.type === 'heading' ? 20 : 16);
+                } else {
+                    elLabel.value = '';
+                }
+            }
+        };
+
+        const DnD = {
+            current: null,
+            onDragStart(ev) {
+                const kind = ev.target.dataset.kind;
+                if (!kind) return;
+                ev.dataTransfer.setData('text/plain', kind);
+                ev.dataTransfer.effectAllowed = 'copy';
+            },
+            onDragOver(ev) {
+                ev.preventDefault();
+                ev.dataTransfer.dropEffect = 'copy';
+            },
+            onDrop(ev) {
+                ev.preventDefault();
+                const kind = ev.dataTransfer.getData('text/plain');
+                const secId = ev.currentTarget.dataset.sectionId;
+                if (!secId || !kind) return;
+                const rect = ev.currentTarget.getBoundingClientRect();
+                const x = ev.clientX - rect.left;
+                const y = ev.clientY - rect.top;
+                addElement(secId, kind, {
+                    x,
+                    y
+                });
+            }
+        };
+
+        const Drag = {
+            dragging: null, // {elId, offsetX, offsetY}
+            start(ev, elId) {
+                const sec = getSelectedSection();
+                if (!sec) return;
+                const e = sec.elements.find(x => x.id === elId);
+                if (!e) return;
+                const node = findElementNode(elId);
+                const rect = node.getBoundingClientRect();
+                this.dragging = {
+                    elId,
+                    offsetX: ev.clientX - rect.left,
+                    offsetY: ev.clientY - rect.top
+                };
+                document.addEventListener('mousemove', this.move);
+                document.addEventListener('mouseup', this.stop);
+            },
+            move: (ev) => {
+                const sec = getSelectedSection();
+                if (!sec || !Drag.dragging) return;
+                const drop = el(`.section[data-id="${sec.id}"] .droppable`);
+                const rect = drop.getBoundingClientRect();
+                const e = sec.elements.find(x => x.id === Drag.dragging.elId);
+                e.x = clamp(ev.clientX - rect.left - Drag.dragging.offsetX, 0, sec.width - (e.w || 160));
+                e.y = clamp(ev.clientY - rect.top - Drag.dragging.offsetY, 0, sec.height - (e.h || 40));
+                CanvasManager.render();
+            },
+            stop: () => {
+                document.removeEventListener('mousemove', Drag.move);
+                document.removeEventListener('mouseup', Drag.stop);
+                Drag.dragging = null;
+            }
+        };
+
+        const Resize = {
+            active: null, // {secId, startW, startH, startX, startY}
+            startSectionResize(ev, secId) {
+                ev.preventDefault();
+                const s = state.sections.find(x => x.id === secId);
+                if (!s) return;
+                this.active = {
+                    secId,
+                    startW: s.width,
+                    startH: s.height,
+                    startX: ev.clientX,
+                    startY: ev.clientY
+                };
+                document.addEventListener('mousemove', this.moveSection);
+                document.addEventListener('mouseup', this.stopSection);
+            },
+            moveSection: (ev) => {
+                const a = Resize.active;
+                if (!a) return;
+                const s = state.sections.find(x => x.id === a.secId);
+                if (!s) return;
+                const dx = ev.clientX - a.startX;
+                const dy = ev.clientY - a.startY;
+                s.width = clamp(a.startW + dx, 100, state.page.width);
+                s.height = clamp(a.startH + dy, 60, state.page.height);
+                CanvasManager.render();
+                Toolbar.refreshSectionFields();
+                Toolbar.refreshSectionList();
+            },
+            stopSection: () => {
+                document.removeEventListener('mousemove', Resize.moveSection);
+                document.removeEventListener('mouseup', Resize.stopSection);
+                Resize.active = null;
+            }
+        };
+
+        const Serialize = {
+            toJSON() {
+                return JSON.stringify(state, null, 2);
+            },
+            fromJSON(json) {
+                const data = JSON.parse(json);
+                // rudimentary validation
+                if (!data.page || !Array.isArray(data.sections)) throw new Error('Invalid JSON');
+                Object.assign(state, {
+                    page: data.page,
+                    sections: data.sections,
+                    selectedSectionId: null,
+                    selectedElementId: null,
+                    previewMode: false,
+                });
+                CanvasManager.render();
+                Toolbar.refreshSectionList();
+                Toolbar.refreshSectionFields();
+                Toolbar.refreshElementFields();
+            },
+            exportHTML() {
+                // Build a minimal standalone HTML of the composed page
+                const doc = document.implementation.createHTMLDocument('Exported Page');
+                const body = doc.body;
+                body.style.margin = '0';
+                const container = doc.createElement('div');
+                container.style.width = state.page.width + 'px';
+                container.style.minHeight = state.page.height + 'px';
+                container.style.margin = '0 auto';
+                body.appendChild(container);
+
+                for (const s of state.sections) {
+                    const sec = doc.createElement('section');
+                    sec.style.width = s.width + 'px';
+                    sec.style.height = s.height + 'px';
+                    sec.style.margin = '0 auto';
+                    sec.style.background = s.bg || '#ffffff';
+                    sec.style.position = 'relative';
+                    sec.style.overflow = 'hidden';
+                    sec.style.borderRadius = '10px';
+                    sec.style.boxSizing = 'border-box';
+                    sec.style.padding = '10px';
+                    container.appendChild(sec);
+
+                    for (const e of (s.elements || [])) {
+                        let node;
+                        if (e.type === 'button') {
+                            node = doc.createElement('button');
+                            node.textContent = e.content || 'Button';
+                            node.style.border = 'none';
+                            node.style.background = 'var(--color-primary, #0ea5a4)';
+                            node.style.color = '#fff';
+                            node.style.padding = '10px 14px';
+                            node.style.borderRadius = '10px';
+                            node.style.fontWeight = '600';
+                        } else if (e.type === 'image' || e.type === 'icon') {
+                            node = doc.createElement('img');
+                            node.src = e.src || '';
+                            node.alt = e.type === 'icon' ? 'Icon' : 'Image';
+                            node.style.width = '100%';
+                            node.style.height = '100%';
+                            node.style.objectFit = 'contain';
+                        } else if (e.type === 'links') {
+                            node = doc.createElement('div');
+                            node.innerHTML = tplQuickLinks.innerHTML;
+                        } else if (e.type === 'heading') {
+                            node = doc.createElement('h2');
+                            node.textContent = e.content || 'Your Heading';
+                            node.style.margin = '0';
+                            node.style.fontSize = (e.style?.fontSize || 20) + 'px';
+                            node.style.fontWeight = e.style?.fontWeight || '700';
+                        } else {
+                            node = doc.createElement('div');
+                            node.textContent = e.content || 'Your text...';
+                            node.style.fontSize = (e.style?.fontSize || 16) + 'px';
+                            node.style.fontStyle = e.style?.fontStyle || 'normal';
+                        }
+                        node.style.position = 'absolute';
+                        node.style.left = (e.x || 0) + 'px';
+                        node.style.top = (e.y || 0) + 'px';
+                        node.style.width = (e.w || 160) + 'px';
+                        node.style.height = (e.h || 40) + 'px';
+                        sec.appendChild(node);
+                    }
+                }
+
+                const blob = new Blob([doc.documentElement.outerHTML], {
+                    type: 'text/html'
+                });
+                downloadBlob(blob, 'mpik-export.html');
+            }
+        };
+
+        // Icons (inline SVG)
+        const Icons = {
+            trash: `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2"><path d="M3 6h18M9 6V4h6v2"/><path d="M8 6h8l-1 14H9L8 6z"/></svg>`,
+            cursor: `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2"><path d="M4 4l7 16 2-6 6-2-15-8z"/></svg>`
+        };
+
+        // Selection helpers
+        function getSelectedSection() {
+            return state.sections.find(s => s.id === state.selectedSectionId) || null;
+        }
+
+        function getSelectedElement() {
+            const s = getSelectedSection();
+            if (!s) return null;
+            return s.elements?.find(e => e.id === state.selectedElementId) || null;
+        }
+
+        function findElementNode(elId) {
+            return el(`.el[data-id="${elId}"]`);
+        }
+
+        function indexOfSection(id) {
+            return state.sections.findIndex(s => s.id === id);
+        }
+
+        function selectSection(id) {
+            state.selectedSectionId = id;
+            state.selectedElementId = null;
+            CanvasManager.render();
+            Toolbar.refreshSectionFields();
+            Toolbar.refreshElementFields();
+        }
+
+        function deleteSection(id) {
+            const idx = indexOfSection(id);
+            if (idx >= 0) state.sections.splice(idx, 1);
+            if (state.selectedSectionId === id) {
+                state.selectedSectionId = null;
+                state.selectedElementId = null;
+            }
+            CanvasManager.render();
+            Toolbar.refreshSectionList();
+            Toolbar.refreshSectionFields();
+        }
+
+        function selectElement(id) {
+            state.selectedElementId = id;
+            CanvasManager.render();
+            Toolbar.refreshElementFields();
+        }
+
+        function deleteElement(id) {
+            const s = getSelectedSection();
+            if (!s) return;
+            const i = s.elements.findIndex(e => e.id === id);
+            if (i >= 0) s.elements.splice(i, 1);
+            if (state.selectedElementId === id) state.selectedElementId = null;
+            CanvasManager.render();
+            Toolbar.refreshElementFields();
+        }
+
+        // Actions
+        function generateLayout() {
+            // page size from inputs or preset
+            const [pw, ph] = (presetSelect.value || '1366x768').split('x').map(n => parseInt(n, 10));
+            const customW = parseInt(inputPageW.value || 0, 10);
+            const customH = parseInt(inputPageH.value || 0, 10);
+            state.page.width = clamp(customW || pw, 320, 4000);
+            state.page.height = clamp(customH || ph, 400, 4000);
+            canvas.style.transform = 'none';
+
+            const count = clamp(parseInt(inputSectionCount.value || 1, 10), 1, 20);
+            state.sections = [];
+            const baseH = Math.floor((state.page.height - (count - 1) * 12) / count);
+            for (let i = 0; i < count; i++) {
+                state.sections.push({
+                    id: uid('sec'),
+                    x: 0,
+                    y: undefined,
+                    width: state.page.width,
+                    height: clamp(baseH, 100, 2000),
+                    bg: '#ffffff',
+                    elements: []
+                });
+            }
+            state.selectedSectionId = state.sections[0]?.id || null;
+            state.selectedElementId = null;
+
+            CanvasManager.render();
+            Toolbar.refreshSectionList();
+            Toolbar.refreshSectionFields();
+            s1Panel.hidden = false;
+        }
+
+        function addElement(secId, kind, pos) {
+            const s = state.sections.find(x => x.id === secId);
+            if (!s) return;
+            const e = {
+                id: uid('el'),
+                type: kind,
+                x: clamp(Math.round(pos.x - 40), 0, s.width - 80),
+                y: clamp(Math.round(pos.y - 20), 0, s.height - 40),
+                w: 200,
+                h: kind === 'image' || kind === 'icon' ? 120 : 48,
+                content: null,
+                style: {}
+            };
+            if (kind === 'heading') {
+                e.content = 'Your Heading';
+                e.style.fontSize = 20;
+                e.style.fontWeight = '700';
+            }
+            if (kind === 'text') {
+                e.content = 'Your text...';
+                e.style.fontSize = 16;
+            }
+            if (kind === 'button') {
+                e.content = 'Button';
+                e.style.fontSize = 16;
+            }
+            if (kind === 'links') {
+                e.content = 'Quick Links';
+                e.w = 220;
+                e.h = 90;
+            }
+            if ((kind === 'image' || kind === 'icon') && state.uploadedImageDataURL) {
+                e.src = state.uploadedImageDataURL;
+            }
+            s.elements.push(e);
+            state.selectedSectionId = secId;
+            state.selectedElementId = e.id;
+            CanvasManager.render();
+            Toolbar.refreshElementFields();
+        }
+
+        // Events: Stage 1
+        presetSelect.addEventListener('change', () => {
+            const [w, h] = presetSelect.value.split('x').map(n => parseInt(n, 10));
+            inputPageW.value = w;
+            inputPageH.value = h;
         });
-    });
-}
 
-function makeResizable(el) {
-    let handle = document.createElement("div");
-    handle.className = "resize-handle";
-    el.appendChild(handle);
+        btnGenerate.addEventListener('click', generateLayout);
 
-    handle.addEventListener("mousedown", e => {
-        e.preventDefault();
-        let startX = e.clientX;
-        let startY = e.clientY;
-        let startWidth = parseInt(getComputedStyle(el).width, 10);
-        let startHeight = parseInt(getComputedStyle(el).height, 10);
+        btnS1Save.addEventListener('click', () => downloadBlob(new Blob([Serialize.toJSON()], {
+            type: 'application/json'
+        }), 'mpik-project.json'));
+        btnS1Next.addEventListener('click', () => {
+            el('#stage1').open = false;
+            el('#stage2').open = true;
+        });
 
-        function doDrag(e) {
-            el.style.width = (startWidth + e.clientX - startX) + "px";
-            el.style.height = (startHeight + e.clientY - startY) + "px";
+        // Stage 2: Section Customization
+        inputSecW.addEventListener('change', () => {
+            const s = getSelectedSection();
+            if (!s) return;
+            s.width = clamp(parseInt(inputSecW.value || 0, 10), 100, state.page.width);
+            CanvasManager.render();
+            Toolbar.refreshSectionList();
+        });
+        inputSecH.addEventListener('change', () => {
+            const s = getSelectedSection();
+            if (!s) return;
+            s.height = clamp(parseInt(inputSecH.value || 0, 10), 60, state.page.height);
+            CanvasManager.render();
+            Toolbar.refreshSectionList();
+        });
+        inputSecBG.addEventListener('input', () => {
+            const s = getSelectedSection();
+            if (!s) return;
+            s.bg = inputSecBG.value;
+            CanvasManager.render();
+        });
+
+        // Palette DnD
+        els('.palette-item').forEach(p => p.addEventListener('dragstart', DnD.onDragStart));
+
+        // Upload image to use for image/icon
+        uploadImage.addEventListener('change', () => {
+            const file = uploadImage.files?. [0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                state.uploadedImageDataURL = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        btnInsertUpload.addEventListener('click', () => {
+            const s = getSelectedSection();
+            if (!s || !state.uploadedImageDataURL) return;
+            addElement(s.id, 'image', {
+                x: 40,
+                y: 40
+            });
+        });
+
+        btnS2Save.addEventListener('click', () => downloadBlob(new Blob([Serialize.toJSON()], {
+            type: 'application/json'
+        }), 'mpik-project.json'));
+        btnS2Next.addEventListener('click', () => {
+            el('#stage2').open = false;
+            el('#stage3').open = true;
+        });
+
+        // Stage 3: Content editing
+        fmtBold.addEventListener('click', () => {
+            const e = getSelectedElement();
+            if (!e) return;
+            e.style = e.style || {};
+            e.style.fontWeight = (e.style.fontWeight === '700' || e.style.fontWeight === 'bold') ? '400' : '700';
+            CanvasManager.render();
+            Toolbar.refreshElementFields();
+        });
+        fmtItalic.addEventListener('click', () => {
+            const e = getSelectedElement();
+            if (!e) return;
+            e.style = e.style || {};
+            e.style.fontStyle = e.style.fontStyle === 'italic' ? 'normal' : 'italic';
+            CanvasManager.render();
+            Toolbar.refreshElementFields();
+        });
+        fmtSize.addEventListener('change', () => {
+            const e = getSelectedElement();
+            if (!e) return;
+            e.style = e.style || {};
+            e.style.fontSize = clamp(parseInt(fmtSize.value || 16, 10), 10, 72);
+            CanvasManager.render();
+        });
+        elLabel.addEventListener('input', () => {
+            const e = getSelectedElement();
+            if (!e) return;
+            if (['heading', 'text', 'button', 'links'].includes(e.type)) {
+                e.content = elLabel.value;
+            }
+            CanvasManager.render();
+        });
+
+        btnS3Save.addEventListener('click', () => downloadBlob(new Blob([Serialize.toJSON()], {
+            type: 'application/json'
+        }), 'mpik-project.json'));
+        btnS3Preview.addEventListener('click', togglePreview);
+
+        // Workspace actions
+        btnFit.addEventListener('click', () => CanvasManager.fitToView());
+        btnPreview.addEventListener('click', togglePreview);
+
+        btnSave.addEventListener('click', () => downloadBlob(new Blob([Serialize.toJSON()], {
+            type: 'application/json'
+        }), 'mpik-project.json'));
+        btnExport.addEventListener('click', () => Serialize.exportHTML());
+
+        btnLoad.addEventListener('click', () => inputLoad.click());
+        inputLoad.addEventListener('change', () => {
+            const file = inputLoad.files?. [0];
+            if (!file) return;
+            file.text().then(txt => {
+                try {
+                    Serialize.fromJSON(txt);
+                } catch (e) {
+                    alert('Failed to load JSON');
+                }
+            });
+        });
+
+        // Preview mode
+        function togglePreview() {
+            state.previewMode = !state.previewMode;
+            const body = el('.workspace');
+            const bannerId = 'preview-banner';
+            if (state.previewMode) {
+                const banner = document.createElement('div');
+                banner.className = 'preview-banner';
+                banner.id = bannerId;
+                banner.innerHTML = `<strong>Preview Mode</strong><div class="control-row"><button class="btn secondary" id="btn-exit-preview">Exit Preview</button></div>`;
+                body.insertBefore(banner, body.firstChild);
+
+                // hide editor affordances
+                els('.section').forEach(s => s.querySelector('.section-toolbar')?.remove());
+                els('.handle').forEach(h => h.remove());
+                els('.el').forEach(n => n.style.cursor = 'default');
+            } else {
+                el('#' + bannerId)?.remove();
+            }
+            CanvasManager.render(); // re-render to restore handles/toolbars
+            if (state.previewMode) {
+                el('#btn-exit-preview').addEventListener('click', togglePreview);
+            }
         }
 
-        function stopDrag() {
-            document.removeEventListener("mousemove", doDrag);
-            document.removeEventListener("mouseup", stopDrag);
+        // Download helper
+        function downloadBlob(blob, filename) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(a.href);
+            a.remove();
         }
 
-        document.addEventListener("mousemove", doDrag);
-        document.addEventListener("mouseup", stopDrag);
-    });
-}
+        // Initialize
+        generateLayout();
+        CanvasManager.fitToView();
 
-function addItemFeatures(el) {
-    enableTextEditing(el);
-    makeResizable(el);
-}
-
-function dropInBox(box, e) {
-    if (selectedItem) {
-        let clone = selectedItem.cloneNode(true); // keep original intact
-        let rect = box.getBoundingClientRect();
-
-        // calculate position relative to container
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
-
-        clone.style.left = x + "px";
-        clone.style.top = y + "px";
-
-        box.appendChild(clone);
-        addItemFeatures(clone);
-        selectedItem = null;
-    }
-}
-
-rightBox.addEventListener("dragover", e => e.preventDefault());
-leftBox.addEventListener("dragover", e => e.preventDefault());
-
-rightBox.addEventListener("drop", e => dropInBox(rightBox, e));
-leftBox.addEventListener("drop", e => dropInBox(leftBox, e));
+        // Accessibility: keyboard delete selected element
+        document.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Delete') {
+                const e = getSelectedElement();
+                if (e) deleteElement(e.id);
+            }
+        });
     </script>
-
 </body>
 
 </html>
