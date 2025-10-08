@@ -3,18 +3,15 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>MPIK Dynamic Webpage Editor — Improved</title>
+    <title>MPIK Dynamic Webpage Editor — Enhanced</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         :root {
             --color-primary: #0ea5a4;
-            /* teal-500 */
             --color-accent: #f59e0b;
-            /* amber-500 */
             --color-bg: #f6f8fb;
             --color-surface: #ffffff;
             --color-text: #0f172a;
-            /* slate-900 */
             --radius: 12px;
             --shadow: 0 8px 24px rgba(15, 23, 42, .08);
             --shadow-soft: 0 4px 14px rgba(15, 23, 42, .06);
@@ -40,7 +37,6 @@
             background: linear-gradient(180deg, #f8fafc 0%, var(--color-bg) 100%);
         }
 
-        /* Header */
         header {
             position: fixed;
             inset-inline: 0;
@@ -78,12 +74,11 @@
             gap: 8px;
         }
 
-        /* Layout */
         main {
             padding-top: 72px;
             height: calc(100% - 72px);
             display: grid;
-            grid-template-columns: 30% 70%;
+            grid-template-columns: 32% 68%;
             gap: var(--gap-lg);
             padding-inline: var(--gap-lg);
             padding-bottom: var(--gap-lg);
@@ -125,7 +120,6 @@
             padding: 16px;
         }
 
-        /* Canvas */
         .canvas-wrapper {
             position: relative;
             margin: 0 auto;
@@ -133,7 +127,8 @@
             border-radius: 10px;
             box-shadow: var(--shadow-soft);
             border: 1px solid #e5e7eb;
-            overflow: hidden;
+            /* overflow: hidden; */
+            overflow: auto; /* for scrolling */
             touch-action: none;
         }
 
@@ -161,6 +156,7 @@
             padding: 6px;
             border-radius: 10px;
             box-shadow: var(--shadow-soft);
+            z-index: 5;
         }
 
         .handle {
@@ -174,7 +170,23 @@
             cursor: nwse-resize;
             box-shadow: 0 2px 6px rgba(14, 165, 164, .4);
             border: 2px solid #fff;
+            z-index: 10;
         }
+
+        .handle-top-left {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    top: -6px;
+    left: -6px;
+    cursor: nwse-resize;
+    box-shadow: 0 2px 6px rgba(14, 165, 164, .4);
+    border: 2px solid #fff;
+    z-index: 10;
+}
+
 
         .droppable {
             position: relative;
@@ -182,7 +194,6 @@
             height: 100%;
         }
 
-        /* Elements */
         .el {
             position: absolute;
             min-width: 56px;
@@ -197,7 +208,11 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            /* center content in container */
+            transition: transform 100ms ease;
+        }
+
+        .el:hover {
+            transform: scale(1.01);
         }
 
         .el.selected {
@@ -244,7 +259,6 @@
             background: #fff;
         }
 
-        /* element resize handle */
         .e-handle {
             position: absolute;
             width: 10px;
@@ -258,7 +272,6 @@
             box-shadow: 0 2px 6px rgba(245, 158, 11, .4);
         }
 
-        /* Controls */
         .controls {
             display: grid;
             gap: 10px;
@@ -278,6 +291,7 @@
         label {
             font-size: 12px;
             color: #475569;
+            font-weight: 500;
         }
 
         input[type="text"],
@@ -292,6 +306,7 @@
             background: #fff;
             outline: none;
             transition: border-color 120ms ease, box-shadow 120ms ease;
+            font-size: 14px;
         }
 
         textarea {
@@ -319,11 +334,21 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            transition: transform 100ms ease, box-shadow 120ms ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(14, 165, 164, .25);
         }
 
         .btn.secondary {
             background: #e2e8f0;
             color: #0f172a;
+        }
+
+        .btn.secondary:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, .1);
         }
 
         .btn.ghost {
@@ -385,6 +410,12 @@
             color: #334155;
             cursor: grab;
             user-select: none;
+            transition: all 120ms ease;
+        }
+
+        .palette-item:hover {
+            background: #f1f5f9;
+            border-color: var(--color-primary);
         }
 
         .palette-item:active {
@@ -402,12 +433,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }
-
-        .icon {
-            width: 16px;
-            height: 16px;
-            display: inline-block;
         }
 
         .icon-btn {
@@ -457,10 +482,24 @@
             overflow: hidden;
         }
 
-        /* preview mode: disable pointer interactions */
         .is-preview .el {
             pointer-events: none !important;
         }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        #canvas {
+            transition: transform 0.25s ease; /* Smooth transition for scaling */
+        }
+
     </style>
 </head>
 
@@ -479,11 +518,19 @@
                 <div class="stage-body">
                     <div class="controls">
                         <div class="control-group">
-                            <label>Preset</label>
+                            <label>Preset Resolutions</label>
                             <select id="preset-select" aria-label="Preset dimensions">
-                                <option value="1366x768">Standard (1366 x 768)</option>
-                                <option value="1024x768">Classic (1024 x 768)</option>
-                                <option value="1440x900">Wide (1440 x 900)</option>
+                                <optgroup label="Desktop Resolutions">
+                                    <option value="1920x1080">Full HD (1920 × 1080)</option>
+                                    <option value="1366x768" selected>HD Ready (1366 × 768)</option>
+                                    <option value="1440x900">WXGA+ (1440 × 900)</option>
+                                    <option value="1536x864">HD+ (1536 × 864)</option>
+                                </optgroup>
+                                <optgroup label="Mobile & Tablet">
+                                    <option value="1024x768">iPad (1024 × 768)</option>
+                                    <option value="768x1024">iPad Portrait (768 × 1024)</option>
+                                    <option value="375x667">iPhone (375 × 667)</option>
+                                </optgroup>
                             </select>
                         </div>
                         <div class="grid-2">
@@ -507,11 +554,10 @@
 
                     <div class="controls" id="sections-config" hidden>
                         <div class="control-group">
-                            <label>Sections (click a section to select on canvas)</label>
+                            <label>Section Configuration<span class="badge">NEW</span></label>
                             <div id="sections-list" class="controls"></div>
                         </div>
                         <div class="right">
-                            Save locally
                             <button class="btn ghost" id="btn-s1-save">Save</button>
                             <button class="btn" id="btn-s1-next">Next: Customize Sections</button>
                         </div>
@@ -519,13 +565,21 @@
                 </div>
             </details>
 
-            Stage 2: Section & Element Customization
             <details id="stage2">
                 <summary>Stage 2 · Section & Element Customization</summary>
                 <div class="stage-body">
-                    <p class="muted">Select a section or element on the canvas to customize it.</p>
+                    <p class="muted">Select a section on the canvas to customize it.</p>
 
                     <div class="controls">
+                        <div class="control-group">
+                            <label>Section Layout <span class="badge">NEW</span></label>
+                            <select id="sec-layout-type">
+                                <option value="horizontal">Horizontal (Full Width)</option>
+                                <option value="vertical-left">Vertical Column (Left)</option>
+                                <option value="vertical-right">Vertical Column (Right)</option>
+                            </select>
+                        </div>
+
                         <div class="grid-3">
                             <div class="control-group">
                                 <label>Section Width (px)</label>
@@ -558,7 +612,6 @@
                             </div>
                         </div>
 
-                        Element appearance: background & text color pickers
                         <div class="grid-3">
                             <div class="control-group">
                                 <label>Element Background</label>
@@ -585,7 +638,6 @@
                 </div>
             </details>
 
-            Stage 3: Content Editing
             <details id="stage3">
                 <summary>Stage 3 · Content Editing</summary>
                 <div class="stage-body">
@@ -605,11 +657,10 @@
                         <input id="el-label" type="text" placeholder="Edit selected element text..." />
                     </div>
 
-                    Quick links editor
                     <div class="control-group">
                         <label for="links-items">Quick Links (comma-separated)</label>
                         <input id="links-items" type="text" placeholder="e.g., Home, About, Contact" />
-                        <p class="muted">Orientation auto-adjusts based on the element’s width and height (horizontal when wide, vertical when tall).</p>
+                        <p class="muted">Orientation auto-adjusts based on the element's width and height.</p>
                     </div>
 
                     <div class="right">
@@ -622,16 +673,14 @@
 
         <section class="workspace" aria-label="Editing workspace">
             <div class="workspace-header">
-                <div class="muted">Workspace · Drag to move elements, use corner handle to resize sections and elements.</div>
+                <div class="muted">Workspace · Drag to move elements, use corner handle to resize.</div>
                 <div class="control-row">
-                    <button class="btn ghost" id="btn-fit">Fit to View</button>
+                    <button class="btn ghost" id="btn-fit">Actual Size</button>
                     <button class="btn" id="btn-preview">Preview</button>
                 </div>
             </div>
             <div class="workspace-body">
-                <div id="canvas" class="canvas-wrapper" style="width:1366px; height:768px;">
-                    Sections render here
-                </div>
+                <div id="canvas" class="canvas-wrapper" style="width:1366px; height:768px;"></div>
             </div>
         </section>
     </main>
@@ -640,8 +689,8 @@
         <div class="control-row" data-item>
             <span class="muted" data-title>Section</span>
             <div class="grid-2" style="flex:1;">
-                <input type="number" min="100" data-w />
-                <input type="number" min="60" data-h />
+                <input type="number" min="100" data-w placeholder="Width" />
+                <input type="number" min="60" data-h placeholder="Height" />
             </div>
             <button class="btn secondary" data-focus>Select</button>
             <button class="btn warn" data-del>Delete</button>
@@ -649,62 +698,42 @@
     </template>
 
     <script type="module">
-        /*
-  MPIK Dynamic Webpage Editor - robust version
-  - Defensive checks to avoid runtime errors when required DOM nodes are missing
-  - Preserves original behaviour and event wiring
-  - Keep your existing HTML IDs / templates; if any are missing, script will warn (console) but continue
-*/
+        const STORAGE_KEY = 'mpik-editor-v2';
+        const el = (sel) => document.querySelector(sel);
+        const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+        let uidCounter = 0;
+        const uid = (prefix) => `${prefix}-${++uidCounter}-${Date.now()}`;
 
         const state = {
-            page: {
-                width: 1366,
-                height: 768
-            },
+            page: { width: 1366, height: 768 },
             sections: [],
             selectedSectionId: null,
             selectedElementId: null,
-            uploadedImageDataURL: null,
             previewMode: false,
+            uploadedImageDataURL: null
         };
 
-        const STORAGE_KEY = 'mpik-editor-state';
-
-        // Utils
-        const uid = (p = 'id') => p + '_' + Math.random().toString(36).slice(2, 9);
-        const el = (sel, root = document) => root.querySelector(sel);
-        const els = (sel, root = document) => Array.from(root.querySelectorAll(sel || '??'));
-        const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-
-        // DOM (guarded)
-        const canvas = el('#canvas');
-        if (!canvas) console.warn('Warning: #canvas not found - canvas operations will be no-ops.');
-
-        const sectionsList = el('#sections-list');
-        const tplSectionItem = el('#tpl-section-item');
-
-        // Controls refs (may be null)
         const presetSelect = el('#preset-select');
         const inputPageW = el('#page-width');
         const inputPageH = el('#page-height');
         const inputSectionCount = el('#section-count');
         const btnGenerate = el('#btn-generate');
         const s1Panel = el('#sections-config');
+        const sectionsList = el('#sections-list');
         const btnS1Save = el('#btn-s1-save');
         const btnS1Next = el('#btn-s1-next');
-
         const inputSecW = el('#sec-width');
         const inputSecH = el('#sec-height');
         const inputSecBG = el('#sec-bg');
-        const uploadImage = el('#upload-image');
-        const btnInsertUpload = el('#btn-insert-upload');
-        const btnS2Save = el('#btn-s2-save');
-        const btnS2Next = el('#btn-s2-next');
+        const secLayoutType = el('#sec-layout-type');
         const inputElBG = el('#el-bg');
         const inputElColor = el('#el-color');
         const inputElW = el('#el-w');
         const inputElH = el('#el-h');
-
+        const uploadImage = el('#upload-image');
+        const btnInsertUpload = el('#btn-insert-upload');
+        const btnS2Save = el('#btn-s2-save');
+        const btnS2Next = el('#btn-s2-next');
         const fmtBold = el('#fmt-bold');
         const fmtItalic = el('#fmt-italic');
         const fmtSize = el('#fmt-size');
@@ -712,34 +741,23 @@
         const inputLinksItems = el('#links-items');
         const btnS3Save = el('#btn-s3-save');
         const btnS3Preview = el('#btn-s3-preview');
-
         const btnFit = el('#btn-fit');
         const btnPreview = el('#btn-preview');
         const btnFinalPreview = el('#btn-final-preview');
+        const canvas = el('#canvas');
 
-        // Icons
         const Icons = {
-            trash: `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2"><path d="M3 6h18M9 6V4h6v2"/><path d="M8 6h8l-1 14H9L8 6z"/></svg>`,
-            cursor: `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2"><path d="M4 4l7 16 2-6 6-2-15-8z"/></svg>`
+            trash: `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>`
         };
 
-        // Selection helpers
         function getSelectedSection() {
-            return state.sections.find(s => s.id === state.selectedSectionId) || null;
+            return state.sections.find(s => s.id === state.selectedSectionId);
         }
 
         function getSelectedElement() {
-            const s = getSelectedSection();
-            if (!s) return null;
-            return s.elements?.find(e => e.id === state.selectedElementId) || null;
-        }
-
-        function indexOfSection(id) {
-            return state.sections.findIndex(s => s.id === id);
-        }
-
-        function findElementNode(elId) {
-            return canvas ? el(`.el[data-id="${elId}"]`, canvas) : null;
+            const sec = getSelectedSection();
+            if (!sec) return null;
+            return sec.elements.find(e => e.id === state.selectedElementId);
         }
 
         function selectSection(id) {
@@ -750,227 +768,286 @@
             Toolbar.refreshElementFields();
         }
 
-        function selectElement(id) {
-            state.selectedElementId = id;
+        function selectElement(secId, elId) {
+            state.selectedSectionId = secId;
+            state.selectedElementId = elId;
             CanvasManager.render();
             Toolbar.refreshElementFields();
         }
 
         function deleteSection(id) {
-            const idx = indexOfSection(id);
-            if (idx >= 0) state.sections.splice(idx, 1);
+            state.sections = state.sections.filter(s => s.id !== id);
             if (state.selectedSectionId === id) {
-                state.selectedSectionId = null;
+                state.selectedSectionId = state.sections[0]?.id || null;
                 state.selectedElementId = null;
             }
+            repositionSections();
             CanvasManager.render();
             Toolbar.refreshSectionList();
             Toolbar.refreshSectionFields();
         }
 
         function deleteElement(id) {
-            const s = getSelectedSection();
-            if (!s) return;
-            const i = s.elements.findIndex(e => e.id === id);
-            if (i >= 0) s.elements.splice(i, 1);
-            if (state.selectedElementId === id) state.selectedElementId = null;
+            const sec = getSelectedSection();
+            if (!sec) return;
+            sec.elements = sec.elements.filter(e => e.id !== id);
+            if (state.selectedElementId === id) {
+                state.selectedElementId = null;
+            }
             CanvasManager.render();
             Toolbar.refreshElementFields();
         }
 
-        // Managers
+        function findElementNode(elId) {
+            return el(`.el[data-id="${elId}"]`);
+        }
+
+        function repositionSections() {
+            if (state.sections.length === 0) return;
+
+            let currentY = 0;
+            const gap = 12;
+            const columns = { left: [], right: [], full: [] };
+
+            state.sections.forEach(sec => {
+                const layout = sec.layoutType || 'horizontal';
+                if (layout === 'vertical-left') {
+                    columns.left.push(sec);
+                } else if (layout === 'vertical-right') {
+                    columns.right.push(sec);
+                } else {
+                    columns.full.push(sec);
+                }
+            });
+
+            const pageWidth = state.page.width;
+            const pageHeight = state.page.height;
+            let leftY = 0, rightY = 0, fullY = 0;
+
+            const processColumn = (sections, x, maxWidth) => {
+                let y = 0;
+                sections.forEach(sec => {
+                    sec.x = x;
+                    sec.y = y;
+                    sec.width = Math.min(sec.width, maxWidth);
+                    y += sec.height + gap;
+                });
+                return y;
+            };
+
+            const columnWidth = Math.floor(pageWidth / 2) - gap;
+
+            if (columns.left.length > 0) {
+                leftY = processColumn(columns.left, 0, columnWidth);
+            }
+            if (columns.right.length > 0) {
+                rightY = processColumn(columns.right, columnWidth + gap, columnWidth);
+            }
+
+            const verticalMaxY = Math.max(leftY, rightY);
+
+            columns.full.forEach(sec => {
+                sec.x = 0;
+                sec.y = verticalMaxY > 0 ? verticalMaxY : fullY;
+                sec.width = Math.min(sec.width, pageWidth);
+                fullY = sec.y + sec.height + gap;
+            });
+
+            const totalHeight = Math.max(verticalMaxY, fullY);
+            if (totalHeight > pageHeight + 100) {
+                console.warn('Sections exceed page height. Consider adjusting section heights.');
+            }
+
+            state.sections.forEach(sec => {
+                if (sec.y + sec.height > pageHeight) {
+                    sec.height = Math.max(100, pageHeight - sec.y - gap);
+                }
+            });
+        }
+
         const CanvasManager = {
+            scale: 1,
+            isFitted: false, // for toggling fit to view
+            offsetX: 0,
+            offsetY: 0,
+
+            clearTransform() {
+                this.scale = 1;
+                this.offsetX = 0;
+                this.offsetY = 0;
+            },
+
+            // fitToView() {
+            //     if (!canvas) return;
+            //     const parent = canvas.parentElement;
+            //     const pw = parent.clientWidth - 32;
+            //     const ph = parent.clientHeight - 32;
+            //     const cw = state.page.width;
+            //     const ch = state.page.height;
+            //     const scaleX = pw / cw;
+            //     const scaleY = ph / ch;
+            //     this.scale = Math.min(scaleX, scaleY, 1);
+            //     canvas.style.transform = `scale(${this.scale})`;
+            //     canvas.style.transformOrigin = 'top left';
+            // },
+            
+            fitToView() {
+                if (!canvas) return;
+
+                // If already fitted, restore to actual size
+                if (this.isFitted) {
+                    this.scale = 1;
+                    canvas.style.transform = 'scale(1)';
+                    canvas.style.transformOrigin = 'top left';
+                    this.isFitted = false;
+                    const btn = document.querySelector('#btn-fit');
+                    if (btn) btn.textContent = 'Fit to View';
+                    return;
+                }
+
+                // Otherwise, fit the canvas to workspace view
+                const parent = canvas.parentElement;
+                const pw = parent.clientWidth - 32;
+                const ph = parent.clientHeight - 32;
+                const cw = state.page.width;
+                const ch = state.page.height;
+                const scaleX = pw / cw;
+                const scaleY = ph / ch;
+
+                this.scale = Math.min(scaleX, scaleY, 1);
+                canvas.style.transform = `scale(${this.scale})`;
+                canvas.style.transformOrigin = 'top left';
+                this.isFitted = true;
+
+                const btn = document.querySelector('#btn-fit');
+                if (btn) btn.textContent = 'Actual Size';
+            },
+
+
             render() {
                 if (!canvas) return;
                 canvas.style.width = state.page.width + 'px';
                 canvas.style.height = state.page.height + 'px';
-
                 canvas.innerHTML = '';
-                let curY = 0;
-                for (const s of state.sections) {
-                    s.y = curY;
-                    if (typeof s.x !== 'number') s.x = 0;
-                    curY += s.height + 12;
 
-                    const sec = document.createElement('div');
-                    sec.className = 'section' + (s.id === state.selectedSectionId ? ' selected' : '');
-                    sec.style.left = s.x + 'px';
-                    sec.style.top = s.y + 'px';
-                    sec.style.width = s.width + 'px';
-                    sec.style.height = s.height + 'px';
-                    sec.style.background = s.bg || '#ffffff';
-                    sec.dataset.id = s.id;
+                state.sections.forEach(sec => {
+                    const secDiv = document.createElement('div');
+                    secDiv.className = 'section';
+                    if (sec.id === state.selectedSectionId) secDiv.classList.add('selected');
+                    secDiv.dataset.id = sec.id;
+                    secDiv.style.cssText = `
+                        left: ${sec.x}px;
+                        top: ${sec.y}px;
+                        width: ${sec.width}px;
+                        height: ${sec.height}px;
+                        background: ${sec.bg || '#ffffff'};
+                    `;
 
-                    // toolbar (hide in preview)
                     if (!state.previewMode) {
-                        const st = document.createElement('div');
-                        st.className = 'section-toolbar';
-                        st.innerHTML = `
-          <button class="icon-btn" data-action="select" title="Select section" aria-label="Select section">${Icons.cursor}</button>
-          <button class="icon-btn" data-action="delete" title="Delete section" aria-label="Delete section">${Icons.trash}</button>
-        `;
-                        st.addEventListener('click', (ev) => {
-                            const btn = ev.target.closest('button');
-                            if (!btn) return;
-                            const act = btn.dataset.action;
-                            if (act === 'select') selectSection(s.id);
-                            if (act === 'delete') deleteSection(s.id);
+                        const toolbar = document.createElement('div');
+                        toolbar.className = 'section-toolbar';
+                        toolbar.innerHTML = `<button class="icon-btn" data-delete>${Icons.trash}</button>`;
+                        toolbar.querySelector('[data-delete]').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteSection(sec.id);
                         });
-                        sec.appendChild(st);
+                        secDiv.appendChild(toolbar);
+
+                        const handle = document.createElement('div');
+                        handle.className = 'handle';
+                        handle.addEventListener('mousedown', (e) => ResizeSection.start(e, sec.id));
+                        secDiv.appendChild(handle);
+                        
+                        const handleTL = document.createElement('div');
+                        handleTL.className = 'handle-top-left';
+                        handleTL.addEventListener('mousedown', (e) => ResizeSection.start(e, sec.id, true));
+                        secDiv.appendChild(handleTL);
+
                     }
 
-                    // resize handle (hide in preview)
-                    if (!state.previewMode) {
-                        const h = document.createElement('div');
-                        h.className = 'handle';
-                        h.title = 'Resize section';
-                        h.dataset.action = 'resize';
-                        h.addEventListener('mousedown', (ev) => ResizeSection.start(ev, s.id));
-                        sec.appendChild(h);
-                    }
-
-                    // droppable
                     const drop = document.createElement('div');
                     drop.className = 'droppable';
-                    drop.dataset.sectionId = s.id;
-                    drop.style.width = '100%';
-                    drop.style.height = '100%';
+                    drop.dataset.sectionId = sec.id;
                     drop.addEventListener('dragover', DnD.onDragOver);
                     drop.addEventListener('drop', DnD.onDrop);
-                    sec.appendChild(drop);
 
-                    // elements
-                    for (const e of (s.elements || [])) {
-                        const node = this.renderElement(e, s.id);
-                        drop.appendChild(node);
-                    }
+                    sec.elements.forEach(elem => {
+                        const elemDiv = document.createElement('div');
+                        elemDiv.className = 'el';
+                        elemDiv.dataset.id = elem.id;
+                        elemDiv.dataset.type = elem.type;
+                        if (elem.id === state.selectedElementId) elemDiv.classList.add('selected');
 
-                    // wiring
-                    sec.addEventListener('mousedown', (ev) => {
-                        if (ev.target === sec || ev.target === drop) {
-                            selectSection(s.id);
+                        const w = elem.w || 160;
+                        const h = elem.h || 40;
+                        elemDiv.style.cssText = `
+                            left: ${elem.x || 0}px;
+                            top: ${elem.y || 0}px;
+                            width: ${w}px;
+                            height: ${h}px;
+                            background: ${elem.style?.background || '#fff'};
+                            color: ${elem.style?.color || '#0f172a'};
+                            font-size: ${elem.style?.fontSize || 16}px;
+                            font-weight: ${elem.style?.fontWeight || 'normal'};
+                            font-style: ${elem.style?.fontStyle || 'normal'};
+                        `;
+
+                        if (elem.type === 'image' || elem.type === 'icon') {
+                            const img = document.createElement('img');
+                            img.className = 'el-img';
+                            img.src = elem.src || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23f1f5f9" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%2394a3b8"%3EImage%3C/text%3E%3C/svg%3E';
+                            elemDiv.appendChild(img);
+                        } else if (elem.type === 'links') {
+                            const items = elem.items || ['Home', 'About', 'Contact'];
+                            const isHorizontal = w > h;
+                            elemDiv.style.flexDirection = isHorizontal ? 'row' : 'column';
+                            elemDiv.style.gap = '8px';
+                            elemDiv.innerHTML = items.map(i => `<a href="#" style="color:inherit;text-decoration:none;">${i}</a>`).join('');
+                        } else {
+                            elemDiv.textContent = elem.content || 'Content';
                         }
+
+                        if (!state.previewMode) {
+                            elemDiv.addEventListener('mousedown', (e) => {
+                                if (e.target.classList.contains('e-handle')) return;
+                                selectElement(sec.id, elem.id);
+                                Drag.start(e, elem.id);
+                            });
+
+                            const eHandle = document.createElement('div');
+                            eHandle.className = 'e-handle';
+                            eHandle.addEventListener('mousedown', (e) => {
+                                e.stopPropagation();
+                                ResizeEl.start(e, sec.id, elem.id);
+                            });
+                            elemDiv.appendChild(eHandle);
+                        }
+
+                        drop.appendChild(elemDiv);
                     });
 
-                    canvas.appendChild(sec);
-                }
-
-                document.body.classList.toggle('is-preview', !!state.previewMode);
-            },
-
-            renderElement(e, secId) {
-                const isButton = e.type === 'button';
-                const node = document.createElement(isButton ? 'button' : 'div');
-                node.className = 'el' + (e.id === state.selectedElementId ? ' selected' : '');
-                node.dataset.id = e.id;
-                node.dataset.type = e.type;
-                node.style.left = (typeof e.x === 'number' ? e.x : 20) + 'px';
-                node.style.top = (typeof e.y === 'number' ? e.y : 20) + 'px';
-                node.style.width = (e.w ?? 160) + 'px';
-                node.style.height = (e.h ?? (e.type === 'image' || e.type === 'icon' ? 120 : 40)) + 'px';
-
-                // Text styles
-                if (e.style?.fontSize) node.style.fontSize = e.style.fontSize + 'px';
-                if (e.style?.fontWeight) node.style.fontWeight = e.style.fontWeight;
-                if (e.style?.fontStyle) node.style.fontStyle = e.style.fontStyle;
-
-                // Colors
-                if (e.style?.background) node.style.background = e.style.background;
-                if (e.style?.color) node.style.color = e.style.color;
-
-                // content
-                if (e.type === 'image' || e.type === 'icon') {
-                    const img = document.createElement('img');
-                    img.className = 'el-img';
-                    img.alt = e.type === 'icon' ? 'Icon' : 'Image';
-                    img.src = e.src || '';
-                    node.appendChild(img);
-                } else if (e.type === 'links') {
-                    const wrapper = document.createElement('div');
-                    wrapper.style.width = '100%';
-                    wrapper.style.height = '100%';
-                    wrapper.style.display = 'flex';
-                    wrapper.style.alignItems = 'center';
-                    wrapper.style.justifyContent = 'center';
-                    wrapper.style.gap = '12px';
-                    const horizontal = (e.w ?? 160) >= (e.h ?? 40);
-                    wrapper.style.flexDirection = horizontal ? 'row' : 'column';
-                    const items = Array.isArray(e.items) && e.items.length ? e.items : ['Home', 'About', 'Contact'];
-                    for (const txt of items) {
-                        const a = document.createElement('a');
-                        a.href = '#';
-                        a.textContent = txt;
-                        a.style.textDecoration = 'none';
-                        a.style.color = e.style?.color || 'var(--color-primary)';
-                        a.style.fontWeight = '500';
-                        wrapper.appendChild(a);
-                    }
-                    node.appendChild(wrapper);
-                } else if (isButton) {
-                    node.textContent = e.content || 'Button';
-                    node.draggable = false;
-                    if (!e.style?.background) {
-                        node.style.background = 'var(--color-primary)';
-                        node.style.color = '#fff';
-                    }
-                } else {
-                    // heading or text
                     if (!state.previewMode) {
-                        node.contentEditable = 'true';
-                        node.spellcheck = false;
-                    } else {
-                        node.contentEditable = 'false';
+                        secDiv.addEventListener('click', (e) => {
+                            if (e.target === secDiv || e.target.classList.contains('droppable')) {
+                                selectSection(sec.id);
+                            }
+                        });
                     }
-                    node.innerText = e.content || (e.type === 'heading' ? 'Your Heading' : 'Your text...');
-                }
 
-                // dragging (disabled in preview)
-                if (!state.previewMode) {
-                    node.addEventListener('mousedown', (ev) => {
-                        ev.stopPropagation();
-                        selectElement(e.id);
-                        Drag.start(ev, e.id);
-                    });
-                    node.addEventListener('keydown', (ev) => {
-                        if (ev.key === 'Delete') {
-                            deleteElement(e.id);
-                        }
-                    });
-                }
-
-                if (!state.previewMode) {
-                    const eh = document.createElement('div');
-                    eh.className = 'e-handle';
-                    eh.title = 'Resize element';
-                    eh.addEventListener('mousedown', (ev) => ResizeEl.start(ev, secId, e.id));
-                    node.appendChild(eh);
-                }
-
-                return node;
-            },
-
-            fitToView() {
-                if (!canvas) return;
-                const wrap = canvas.parentElement;
-                if (!wrap) return;
-                const maxW = wrap.clientWidth - 24;
-                const maxH = wrap.clientHeight - 24;
-                const scale = Math.min(maxW / state.page.width, maxH / state.page.height, 1);
-                canvas.style.transformOrigin = 'top left';
-                canvas.style.transform = `scale(${scale})`;
-            },
-            clearTransform() {
-                if (canvas) canvas.style.transform = 'none';
+                    secDiv.appendChild(drop);
+                    canvas.appendChild(secDiv);
+                });
             }
         };
 
         const Toolbar = {
             refreshSectionList() {
-                if (!sectionsList || !tplSectionItem) return;
+                if (!sectionsList) return;
                 sectionsList.innerHTML = '';
-                for (const s of state.sections) {
-                    const item = tplSectionItem.content.firstElementChild.cloneNode(true);
-                    item.querySelector('[data-title]').textContent = `Section ${indexOfSection(s.id)+1}`;
+                const tpl = el('#tpl-section-item');
+                state.sections.forEach((s, idx) => {
+                    const item = tpl.content.cloneNode(true).querySelector('[data-item]');
+                    item.querySelector('[data-title]').textContent = `Section ${idx + 1}`;
                     const iw = item.querySelector('[data-w]');
                     const ih = item.querySelector('[data-h]');
                     iw.value = s.width;
@@ -978,22 +1055,21 @@
 
                     iw.addEventListener('change', () => {
                         s.width = clamp(parseInt(iw.value || 0, 10), 100, state.page.width);
+                        repositionSections();
                         CanvasManager.render();
                     });
                     ih.addEventListener('change', () => {
                         s.height = clamp(parseInt(ih.value || 0, 10), 60, state.page.height);
+                        repositionSections();
                         CanvasManager.render();
                     });
                     item.querySelector('[data-focus]').addEventListener('click', () => {
                         selectSection(s.id);
-                        el(`.section[data-id="${s.id}"]`)?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
+                        el(`.section[data-id="${s.id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     });
                     item.querySelector('[data-del]').addEventListener('click', () => deleteSection(s.id));
                     sectionsList.appendChild(item);
-                }
+                });
                 if (s1Panel) s1Panel.hidden = state.sections.length === 0;
             },
 
@@ -1004,11 +1080,13 @@
                     inputSecW.value = '';
                     inputSecH.value = '';
                     inputSecBG.value = '#ffffff';
+                    if (secLayoutType) secLayoutType.value = 'horizontal';
                     return;
                 }
                 inputSecW.value = s.width;
                 inputSecH.value = s.height;
                 inputSecBG.value = s.bg || '#ffffff';
+                if (secLayoutType) secLayoutType.value = s.layoutType || 'horizontal';
             },
 
             refreshElementFields() {
@@ -1025,7 +1103,7 @@
                     return;
                 }
                 if (['button', 'text', 'heading', 'links'].includes(e.type)) {
-                    elLabel.value = e.content || (e.type === 'links' ? '' : '');
+                    elLabel.value = e.content || '';
                     fmtSize.value = e.style?.fontSize || (e.type === 'heading' ? 20 : 16);
                 } else {
                     elLabel.value = '';
@@ -1042,7 +1120,6 @@
             }
         };
 
-        // Dragging elements
         const Drag = {
             dragging: null,
             start(ev, elId) {
@@ -1069,10 +1146,15 @@
                 const rect = drop.getBoundingClientRect();
                 const e = sec.elements.find(x => x.id === Drag.dragging.elId);
                 if (!e) return;
+                
+                const scale = CanvasManager.scale || 1;
+                const localX = (ev.clientX - rect.left) / scale;
+                const localY = (ev.clientY - rect.top) / scale;
+                
                 const maxX = sec.width - (e.w || 160);
                 const maxY = sec.height - (e.h || 40);
-                e.x = clamp(ev.clientX - rect.left - Drag.dragging.offsetX, 0, maxX);
-                e.y = clamp(ev.clientY - rect.top - Drag.dragging.offsetY, 0, maxY);
+                e.x = clamp(localX - Drag.dragging.offsetX / scale, 0, maxX);
+                e.y = clamp(localY - Drag.dragging.offsetY / scale, 0, maxY);
                 CanvasManager.render();
             },
             stop() {
@@ -1084,7 +1166,7 @@
 
         const ResizeSection = {
             active: null,
-            start(ev, secId) {
+            start(ev, secId, isTopLeft = false) {
                 ev.preventDefault();
                 const s = state.sections.find(x => x.id === secId);
                 if (!s) return;
@@ -1093,20 +1175,37 @@
                     startW: s.width,
                     startH: s.height,
                     startX: ev.clientX,
-                    startY: ev.clientY
+                    startY: ev.clientY,
+                    startLeft: s.x,
+                    startTop: s.y,
+                    isTopLeft
                 };
                 document.addEventListener('mousemove', this.move);
                 document.addEventListener('mouseup', this.stop);
             },
-            move: (ev) => {
+            move(ev) {
                 const a = ResizeSection.active;
                 if (!a) return;
                 const s = state.sections.find(x => x.id === a.secId);
                 if (!s) return;
-                const dx = ev.clientX - a.startX;
-                const dy = ev.clientY - a.startY;
-                s.width = clamp(a.startW + dx, 100, state.page.width);
-                s.height = clamp(a.startH + dy, 60, state.page.height);
+                const scale = CanvasManager.scale || 1;
+                const dx = (ev.clientX - a.startX) / scale;
+                const dy = (ev.clientY - a.startY) / scale;
+
+                if (a.isTopLeft) {
+                    const newW = clamp(a.startW - dx, 100, state.page.width);
+                    const newH = clamp(a.startH - dy, 60, state.page.height);
+                    const deltaW = newW - s.width;
+                    const deltaH = newH - s.height;
+                    s.x = clamp(a.startLeft + dx, 0, state.page.width - newW);
+                    s.y = clamp(a.startTop + dy, 0, state.page.height - newH);
+                    s.width = newW;
+                    s.height = newH;
+                } else {
+                    s.width = clamp(a.startW + dx, 100, state.page.width - s.x);
+                    s.height = clamp(a.startH + dy, 60, state.page.height - s.y);
+                }
+
                 CanvasManager.render();
                 Toolbar.refreshSectionFields();
                 Toolbar.refreshSectionList();
@@ -1144,10 +1243,10 @@
                 if (!s) return;
                 const e = s.elements.find(x => x.id === a.elId);
                 if (!e) return;
-                const dx = ev.clientX - a.startX;
-                const dy = ev.clientY - a.startY;
-                const minW = 56,
-                    minH = 32;
+                const scale = CanvasManager.scale || 1;
+                const dx = (ev.clientX - a.startX) / scale;
+                const dy = (ev.clientY - a.startY) / scale;
+                const minW = 56, minH = 32;
                 const maxW = (s.width - (e.x || 0));
                 const maxH = (s.height - (e.y || 0));
                 e.w = clamp((a.startW + dx), minW, maxW);
@@ -1162,7 +1261,6 @@
             }
         };
 
-        // DnD for palette
         const DnD = {
             onDragOver(ev) {
                 ev.preventDefault();
@@ -1174,16 +1272,13 @@
                 const secId = ev.currentTarget.dataset.sectionId;
                 if (!secId || !kind) return;
                 const rect = ev.currentTarget.getBoundingClientRect();
-                const x = ev.clientX - rect.left;
-                const y = ev.clientY - rect.top;
-                addElement(secId, kind, {
-                    x,
-                    y
-                });
+                const scale = CanvasManager.scale || 1;
+                const x = (ev.clientX - rect.left) / scale;
+                const y = (ev.clientY - rect.top) / scale;
+                addElement(secId, kind, { x, y });
             }
         };
 
-        // Serialize + Local Save/Load
         const Serialize = {
             toJSON() {
                 return JSON.stringify(state, null, 2);
@@ -1208,7 +1303,7 @@
         function saveLocal() {
             try {
                 localStorage.setItem(STORAGE_KEY, Serialize.toJSON());
-                console.log('[v0] Saved locally');
+                alert('Saved successfully!');
             } catch (e) {
                 console.warn('Save failed', e);
             }
@@ -1227,7 +1322,6 @@
             return false;
         }
 
-        // Actions
         function generateLayout() {
             const preset = presetSelect?.value || '1366x768';
             const [pw, ph] = preset.split('x').map(n => parseInt(n, 10));
@@ -1244,13 +1338,15 @@
                 state.sections.push({
                     id: uid('sec'),
                     x: 0,
-                    y: undefined,
+                    y: 0,
                     width: state.page.width,
                     height: clamp(baseH, 100, 2000),
                     bg: '#ffffff',
+                    layoutType: 'horizontal',
                     elements: []
                 });
             }
+            repositionSections();
             state.selectedSectionId = state.sections[0]?.id || null;
             state.selectedElementId = null;
 
@@ -1263,8 +1359,8 @@
         function addElement(secId, kind, pos) {
             const s = state.sections.find(x => x.id === secId);
             if (!s) return;
-            const px = Math.round(pos.x || 40),
-                py = Math.round(pos.y || 20);
+            const px = Math.round(pos.x || 40);
+            const py = Math.round(pos.y || 20);
             const e = {
                 id: uid('el'),
                 type: kind,
@@ -1305,9 +1401,6 @@
             Toolbar.refreshElementFields();
         }
 
-        // Event wiring (guarded)
-
-        // Preset sync
         if (presetSelect) presetSelect.addEventListener('change', () => {
             const [w, h] = presetSelect.value.split('x').map(n => parseInt(n, 10));
             if (inputPageW) inputPageW.value = w;
@@ -1320,11 +1413,19 @@
             el('#stage2')?.setAttribute('open', '');
         });
 
-        // Stage 2
+        if (secLayoutType) secLayoutType.addEventListener('change', () => {
+            const s = getSelectedSection();
+            if (!s) return;
+            s.layoutType = secLayoutType.value;
+            repositionSections();
+            CanvasManager.render();
+        });
+
         if (inputSecW) inputSecW.addEventListener('change', () => {
             const s = getSelectedSection();
             if (!s) return;
             s.width = clamp(parseInt(inputSecW.value || 0, 10), 100, state.page.width);
+            repositionSections();
             CanvasManager.render();
             Toolbar.refreshSectionList();
         });
@@ -1332,6 +1433,7 @@
             const s = getSelectedSection();
             if (!s) return;
             s.height = clamp(parseInt(inputSecH.value || 0, 10), 60, state.page.height);
+            repositionSections();
             CanvasManager.render();
             Toolbar.refreshSectionList();
         });
@@ -1342,7 +1444,6 @@
             CanvasManager.render();
         });
 
-        // Palette: be tolerant if no palette items present
         const paletteItems = Array.from(document.querySelectorAll('.palette-item') || []);
         paletteItems.forEach(p => {
             p.addEventListener('dragstart', (ev) => {
@@ -1353,9 +1454,8 @@
             });
         });
 
-        // Upload image
         if (uploadImage) uploadImage.addEventListener('change', () => {
-            const file = uploadImage.files?. [0];
+            const file = uploadImage.files?.[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = () => {
@@ -1366,13 +1466,9 @@
         if (btnInsertUpload) btnInsertUpload.addEventListener('click', () => {
             const s = getSelectedSection();
             if (!s || !state.uploadedImageDataURL) return;
-            addElement(s.id, 'image', {
-                x: 40,
-                y: 40
-            });
+            addElement(s.id, 'image', { x: 40, y: 40 });
         });
 
-        // Element appearance
         if (inputElBG) inputElBG.addEventListener('input', () => {
             const e = getSelectedElement();
             if (!e) return;
@@ -1408,7 +1504,6 @@
             el('#stage3')?.setAttribute('open', '');
         });
 
-        // Stage 3 formatting
         if (fmtBold) fmtBold.addEventListener('click', () => {
             const e = getSelectedElement();
             if (!e) return;
@@ -1451,12 +1546,10 @@
         if (btnS3Save) btnS3Save.addEventListener('click', saveLocal);
         if (btnS3Preview) btnS3Preview.addEventListener('click', togglePreview);
 
-        // Workspace actions
         if (btnFit) btnFit.addEventListener('click', () => CanvasManager.fitToView());
         if (btnPreview) btnPreview.addEventListener('click', togglePreview);
         if (btnFinalPreview) btnFinalPreview.addEventListener('click', togglePreview);
 
-        // Preview mode
         function togglePreview() {
             state.previewMode = !state.previewMode;
             const body = el('.workspace') || document.body;
@@ -1468,7 +1561,6 @@
                 banner.innerHTML = `<strong>Preview Mode</strong><div class="control-row"><button class="btn secondary" id="btn-exit-preview">Exit Preview</button></div>`;
                 body.insertBefore(banner, body.firstChild);
                 CanvasManager.render();
-                // attach listener to exit button
                 el('#btn-exit-preview')?.addEventListener('click', togglePreview);
             } else {
                 el('#' + bannerId)?.remove();
@@ -1476,7 +1568,6 @@
             }
         }
 
-        // Init
         function init() {
             if (!tryLoadLocal()) {
                 generateLayout();
@@ -1484,7 +1575,6 @@
             CanvasManager.fitToView();
         }
 
-        // Accessibility: delete selected element by keyboard
         document.addEventListener('keydown', (ev) => {
             if (ev.key === 'Delete') {
                 const e = getSelectedElement();
